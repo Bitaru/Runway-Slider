@@ -10,8 +10,10 @@ $.Slider.defaults =
   interval    : 4000 # Interval between slides in autoplay mod
   #~
   autoplay    : false # Autoplay
+  runOnScroll : true # Will start autoplay on scroll
   parallax    : true # On/Off parallax effect (killin` css3)
   autoHeight  : false # If true - will size wrap to highest slide
+  midSlides   : true # If true - will center clides verical
   useIcons    : false # In true - will add to navigation span class as data-ion in slide
   #~
   autoDir     : 'right' # Slide to right when in Autoplay mod
@@ -67,7 +69,14 @@ $.Slider:: =
       for el in sl
         if $height < $(el).height()
           $height = $(el).height()
+      if @o.midSlides is true
+        for el in sl
+          $el = $(el)
+          $el.css('top', "50%");
+          $el.css('margin-top', '-'+$el.height()/2+'px');
+
       return $height
+
 
     ### Max Height ###
     if @o.autoHeight is true
@@ -89,7 +98,13 @@ $.Slider:: =
     @_loadEvents()
 
     # slideshow
-    @_startSlideshow()  if @o.autoplay
+    @_startSlideshow()  if @o.autoplay and _self.o.runOnScroll isnt true
+    if _self.o.runOnScroll is true
+      w = $(window)
+      w.scroll ->
+        if w.scrollTop() > _self.$el.offset().top - (w.height()/2) and _self.o.autoplay is false
+          _self.o.autoplay = true
+          _self._startSlideshow()
 
   _navigate: (page, dir) ->
     $current = @$slides.eq(@current)
